@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kite Paper Trading (Local)</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Kite Paper Trading</h1>
+        <p id="subtitle" class="subtle">Local only</p>
+      </div>
+      <div class="cash-box">
+        <div class="label">Cash Balance</div>
+        <div id="cashBalance" class="value">₹0</div>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="liveTab">Live Paper</button>
+      <button class="tab" data-tab="backtestTab">Backtest</button>
+    </nav>
+
+    <main class="grid tab-panel active" id="liveTab">
+      <section class="card">
+        <h2>Market</h2>
+        <div class="controls">
+          <input id="searchInput" type="text" placeholder="Search symbol or name..." />
+          <button id="tickBtn">Simulate Tick</button>
+        </div>
+        <table class="table market-table" id="marketTable">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Exchange</th>
+              <th>Price</th>
+              <th>Change</th>
+              <th>As Of</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Place Order</h2>
+        <form id="orderForm" class="form">
+          <label>
+            Symbol
+            <input id="orderSymbol" type="text" placeholder="RELIANCE" required />
+          </label>
+          <label>
+            Exchange
+            <select id="orderExchange">
+              <option value="NSE">NSE</option>
+              <option value="BSE">BSE</option>
+            </select>
+          </label>
+          <label>
+            Side
+            <select id="orderSide">
+              <option value="BUY">BUY</option>
+              <option value="SELL">SELL</option>
+            </select>
+          </label>
+          <label>
+            Quantity
+            <input id="orderQty" type="number" min="1" step="1" value="1" required />
+          </label>
+          <label>
+            Order Type
+            <select id="orderType">
+              <option value="MARKET">MARKET</option>
+              <option value="LIMIT">LIMIT</option>
+            </select>
+          </label>
+          <label>
+            Limit Price (₹)
+            <input id="orderLimit" type="number" min="0" step="0.05" placeholder="Only for limit" />
+          </label>
+          <button type="submit">Submit</button>
+        </form>
+        <div id="orderHelp" class="subtle"></div>
+      </section>
+
+      <section class="card">
+        <h2>Positions</h2>
+        <table class="table positions-table" id="positionsTable">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Exchange</th>
+              <th>Qty</th>
+              <th>Avg Price</th>
+              <th>Last</th>
+              <th>Unrealized P&amp;L</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Orders</h2>
+        <table class="table orders-table" id="ordersTable">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Qty</th>
+              <th>Type</th>
+              <th>Limit</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Trades</h2>
+        <table class="table" id="tradesTable">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Exchange</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Controls</h2>
+        <div class="controls">
+          <button id="resetBtn" class="danger">Reset</button>
+        </div>
+        <div class="subtle">
+          This is paper trading only. Real Kite trading can be added later.
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Chart</h2>
+        <div class="controls">
+          <div class="subtle" id="chartSymbol">Select a symbol to view chart.</div>
+          <select id="chartInterval">
+            <option value="day">Daily</option>
+            <option value="60minute">60 min</option>
+            <option value="15minute">15 min</option>
+            <option value="5minute">5 min</option>
+          </select>
+          <select id="chartDays">
+            <option value="30">30 days</option>
+            <option value="90">90 days</option>
+            <option value="180" selected>180 days</option>
+            <option value="365">365 days</option>
+          </select>
+          <button id="chartRefreshBtn">Load Chart</button>
+        </div>
+        <div id="chartError" class="subtle"></div>
+        <div class="chart-container">
+          <canvas id="chartCanvas" width="900" height="360"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Kite Connect</h2>
+        <div class="controls">
+          <button id="kiteLoginBtn">Get Login URL</button>
+          <button id="kiteSyncBtn">Sync Instruments</button>
+        </div>
+        <div id="kiteStatus" class="subtle"></div>
+        <label>
+          Paste request_token after login
+          <input id="kiteRequestToken" type="text" placeholder="request_token" />
+        </label>
+        <div class="controls">
+          <button id="kiteExchangeBtn">Exchange Token</button>
+        </div>
+        <div id="kiteHelp" class="subtle"></div>
+      </section>
+    </main>
+
+    <main class="grid tab-panel" id="backtestTab">
+      <section class="card">
+        <h2>Backtest Data</h2>
+        <div class="controls">
+          <input id="btSymbol" type="text" placeholder="Symbol (e.g., RELIANCE)" />
+          <input id="btFile" type="file" accept=".csv" />
+          <button id="btLoadBtn">Load CSV</button>
+          <button id="btClearBtn" class="danger">Clear Backtest</button>
+        </div>
+        <div class="subtle">
+          CSV format: date,price (date can be YYYY-MM-DD or timestamp). Example: 2024-01-02,2450.5
+        </div>
+        <div id="btMeta" class="subtle"></div>
+      </section>
+
+      <section class="card">
+        <h2>Timeline</h2>
+        <div class="controls">
+          <button id="btPrevBtn">Prev</button>
+          <button id="btNextBtn">Next</button>
+          <input id="btIndex" type="number" min="0" step="1" value="0" />
+        </div>
+        <div id="btCurrent" class="subtle"></div>
+      </section>
+
+      <section class="card">
+        <h2>Backtest Order</h2>
+        <form id="btOrderForm" class="form">
+          <label>
+            Side
+            <select id="btSide">
+              <option value="BUY">BUY</option>
+              <option value="SELL">SELL</option>
+            </select>
+          </label>
+          <label>
+            Quantity
+            <input id="btQty" type="number" min="1" step="1" value="1" required />
+          </label>
+          <button type="submit">Execute at Current Price</button>
+        </form>
+        <div id="btHelp" class="subtle"></div>
+      </section>
+
+      <section class="card">
+        <h2>Backtest Positions</h2>
+        <table class="table" id="btPositionsTable">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Qty</th>
+              <th>Avg Price</th>
+              <th>Last</th>
+              <th>Unrealized P&amp;L</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Backtest Trades</h2>
+        <table class="table" id="btTradesTable">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Side</th>
+              <th>Qty</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
